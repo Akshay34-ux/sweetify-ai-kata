@@ -1,108 +1,165 @@
 // src/pages/AdminPanel.jsx
 import React, { useEffect, useState } from "react";
 import API from "../lib/api";
+import AddSweetForm from "../components/AddSweetForm";
+import AdminTable from "../components/AdminTable";
+import EditSweetModal from "../components/EditSweetModal";
+import RestockModal from "../components/RestockModal";
+import { toast } from "react-toastify";
 
-export default function AdminPanel({ user }) {
+export default function AdminPanel() {
   const [sweets, setSweets] = useState([]);
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    category: "Other",
-    stock: 0,
-    image: "",
-  });
+  const [loading, setLoading] = useState(false);
+
+  // UI modals state
+  const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [restockOpen, setRestockOpen] = useState(false);
+  const [activeSweet, setActiveSweet] = useState(null);
+
+  // stats
+  const [stats, setStats] = useState({ total: 0, outOfStock: 0, lowStock: 0 });
+
+  async function fetchSweets() {
+    setLoading(true);
+    try {
+      const res = await API.get("/sweets");
+      setSweets(res.data || []);
+      computeStats(res.data || []);
+    } catch (err) {
+      console.error("Fetch sweets (admin) failed", err);
+      toast.error("Failed to load sweets");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function computeStats(list) {
+    const total = list.length;
+    let outOfStock = 0;
+    let lowStock = 0;
+    list.forEach((s) => {
+      const st = typeof s.stock === "number" ? s.stock : null;
+      if (st !== null) {
+        if (st === 0) outOfStock++;
+        if (st > 0 && st <= 5) lowStock++;
+      }
+    });
+    setStats({ total, outOfStock, lowStock });
+  }
 
   useEffect(() => {
     fetchSweets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function fetchSweets() {
-    try {
-      const res = await API.get("/sweets");
-      setSweets(res.data);
-    } catch (err) {
-      console.error("fetchSweets:", err?.response?.data || err.message);
-      alert("Failed to load sweets");
-    }
-  }
+  // callbacks used by table buttons
+  const onEdit = (sweet) => {
+    setActiveSweet(sweet);
+    setEditOpen(true);
+  };
 
-  const create = async () => {
+  const onRestock = (sweet) => {
+    setActiveSweet(sweet);
+    setRestockOpen(true);
+  };
+
+  const onDelete = async (sweet) => {
+    if (!window.confirm(`Delete "${sweet.name}"? This cannot be undone.`)) return;
     try {
       const token = localStorage.getItem("token");
-      if (!token) return alert("Login as admin required");
-      await API.post("/sweets", form, { headers: { Authorization: `Bearer ${token}` } });
-      setForm({ name: "", description: "", price: 0, category: "Other", stock: 0, image: "" });
-      fetchSweets();
-      alert("Added");
+      await API.delete(`/sweets/${sweet._id}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {});
+      toast.success("Deleted");
+      await fetchSweets();
     } catch (err) {
-      alert(err?.response?.data?.message || "Error adding sweet");
+      toast.error(err?.response?.data?.message || "Delete failed");
     }
   };
 
-  const restock = async (id) => {
-    const q = prompt("Quantity to add", "10");
-    if (!q) return;
-    try {
-      const token = localStorage.getItem("token");
-      await API.post(`/sweets/${id}/restock`, { quantity: Number(q) }, { headers: { Authorization: `Bearer ${token}` } });
-      fetchSweets();
-      alert("Restocked");
-    } catch (err) {
-      alert(err?.response?.data?.message || "Error restocking");
-    }
+  const onAdded = async (newSweet) => {
+    setAddOpen(false);
+    toast.success("Sweet added");
+    await fetchSweets();
   };
 
-  const remove = async (id) => {
-    if (!window.confirm("Delete?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      await API.delete(`/sweets/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      fetchSweets();
-      alert("Deleted");
-    } catch (err) {
-      alert(err?.response?.data?.message || "Error deleting");
-    }
+  const onUpdated = async (updated) => {
+    setEditOpen(false);
+    setActiveSweet(null);
+    toast.success("Updated");
+    await fetchSweets();
   };
 
-  if (!user || user.role !== "admin") {
-    return <div className="max-w-md mx-auto bg-white p-6 rounded shadow">Admin access required. Log in as an admin to use this page.</div>;
-  }
+  const onRestocked = async (updated) => {
+    setRestockOpen(false);
+    setActiveSweet(null);
+    toast.success("Restocked");
+    await fetchSweets();
+  };
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Admin Panel</h2>
-
-      <div className="mb-6 bg-white p-4 rounded shadow">
-        <h3 className="font-semibold mb-2">Add Sweet</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="px-3 py-2 border rounded" />
-          <input placeholder="Price" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} className="px-3 py-2 border rounded" />
-          <input placeholder="Image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="px-3 py-2 border rounded" />
-          <input placeholder="Stock" type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} className="px-3 py-2 border rounded" />
-          <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="px-3 py-2 border rounded" />
-          <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="px-3 py-2 border rounded" />
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
+          <p className="text-sm text-gray-600 mt-1">Manage sweets, stock, and inventory.</p>
         </div>
-        <div className="mt-3">
-          <button onClick={create} className="px-4 py-2 bg-green-600 text-white rounded">Add Sweet</button>
+
+        <div className="flex gap-2">
+          <button onClick={() => setAddOpen(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow">
+            + Add Sweet
+          </button>
+          <button onClick={fetchSweets} className="px-4 py-2 bg-white border rounded-md">
+            Refresh
+          </button>
         </div>
       </div>
 
-      <div className="space-y-3">
-        {sweets.map((s) => (
-          <div key={s._id} className="bg-white p-3 rounded shadow flex items-center justify-between">
-            <div>
-              <div className="font-semibold">{s.name} <span className="text-sm text-gray-500">({s.stock})</span></div>
-              <div className="text-sm text-gray-600">{s.description}</div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow flex flex-col">
+          <span className="text-sm text-gray-500">Total Sweets</span>
+          <span className="text-2xl font-semibold mt-2">{stats.total}</span>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow flex flex-col">
+          <span className="text-sm text-gray-500">Out of stock</span>
+          <span className="text-2xl font-semibold mt-2 text-red-600">{stats.outOfStock}</span>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow flex flex-col">
+          <span className="text-sm text-gray-500">Low stock (&le;5)</span>
+          <span className="text-2xl font-semibold mt-2 text-yellow-600">{stats.lowStock}</span>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <AdminTable
+          sweets={sweets}
+          loading={loading}
+          onEdit={onEdit}
+          onRestock={onRestock}
+          onDelete={onDelete}
+        />
+      </div>
+
+      {/* Modals */}
+      {addOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg p-5 w-full max-w-3xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Add New Sweet</h3>
+              <button onClick={() => setAddOpen(false)} className="text-gray-600">Close</button>
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => restock(s._id)} className="px-3 py-1 border rounded">Restock</button>
-              <button onClick={() => remove(s._id)} className="px-3 py-1 border rounded text-red-600">Delete</button>
-            </div>
+            <AddSweetForm onAdded={onAdded} onCancel={() => setAddOpen(false)} />
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {editOpen && activeSweet && (
+        <EditSweetModal sweet={activeSweet} onClose={() => setEditOpen(false)} onSaved={onUpdated} />
+      )}
+
+      {restockOpen && activeSweet && (
+        <RestockModal sweet={activeSweet} onClose={() => setRestockOpen(false)} onSaved={onRestocked} />
+      )}
     </div>
   );
 }
