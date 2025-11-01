@@ -1,11 +1,43 @@
 // backend/src/routes/sweetRoutes.js
 import express from "express";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 import Sweet from "../models/Sweet.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
+
+/**
+ * Helper: determine if the incoming request belongs to an admin.
+ * This tries to read the Authorization header (if present) and verify the JWT.
+ * Returns true if token is valid and role === "admin".
+ */
+function requestIsAdmin(req) {
+  try {
+    const auth = req.headers.authorization || "";
+    const token = auth.startsWith("Bearer ") ? auth.split(" ")[1] : null;
+    if (!token) return false;
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    return payload && payload.role === "admin";
+  } catch (err) {
+    return false;
+  }
+}
+
+/**
+ * Utility to remove stock field for non-admin viewers
+ */
+function hideStockForNonAdmin(sweets, isAdmin) {
+  if (isAdmin) return sweets;
+  // map to plain objects and set stock to undefined (explicitly hidden)
+  return sweets.map((s) => {
+    const o = s.toObject ? s.toObject() : { ...s };
+    // explicitly hide stock (instead of deleting the key) so frontends see it as "hidden"
+    o.stock = undefined;
+    return o;
+  });
+}
 
 /**
  * Search endpoint
@@ -35,7 +67,10 @@ router.get("/search", async (req, res) => {
     }
 
     const sweets = await Sweet.find(filter).populate("createdBy", "username email");
-    res.status(200).json(sweets);
+    const isAdmin = requestIsAdmin(req);
+    const out = hideStockForNonAdmin(sweets, isAdmin);
+
+    res.status(200).json(out);
   } catch (error) {
     console.error("❌ Search Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -64,11 +99,13 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// Get all sweets (Public)
+// Get all sweets (Public — hides stock for non-admin)
 router.get("/", async (req, res) => {
   try {
     const sweets = await Sweet.find().populate("createdBy", "username email");
-    res.status(200).json(sweets);
+    const isAdmin = requestIsAdmin(req);
+    const out = hideStockForNonAdmin(sweets, isAdmin);
+    res.status(200).json(out);
   } catch (error) {
     console.error("❌ Get Sweets Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -100,8 +137,8 @@ router.put("/:id", protect, async (req, res) => {
 /**
  * Purchase endpoint
  * - Protected (any authenticated user)
- * - Decrements stock by 1 (or by quantity parameter if provided)
- * - Fails if insufficient stock
+ * - Decrements stock by requested quantity (defaults to 1)
+ * - Fails with clear message if insufficient stock
  * Request body example: { "quantity": 2 } (optional, defaults to 1)
  */
 router.post("/:id/purchase", protect, async (req, res) => {
@@ -121,10 +158,15 @@ router.post("/:id/purchase", protect, async (req, res) => {
     );
 
     if (!sweet) {
-      return res.status(400).json({ message: "Insufficient stock or sweet not found" });
+      // try to fetch current stock to provide clearer message
+      const maybe = await Sweet.findById(req.params.id).select("stock");
+      if (!maybe) {
+        return res.status(404).json({ message: "Sweet not found" });
+      }
+      return res.status(400).json({ message: `Insufficient stock. Only ${maybe.stock} item(s) available.` });
     }
 
-    res.status(200).json({ message: "Purchase successful", sweet });
+    return res.status(200).json({ message: "Purchase successful", sweet, purchasedQuantity: qty });
   } catch (error) {
     console.error("❌ Purchase Error:", error);
     res.status(500).json({ message: "Server error" });

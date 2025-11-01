@@ -1,13 +1,15 @@
 // src/App.jsx
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
 import { setAuthToken } from "./lib/api";
+import AdminRoute from "./components/AdminRoute";
+import Navbar from "./components/Navbar";
 
-function App() {
+export default function App() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
@@ -29,30 +31,28 @@ function App() {
   };
 
   return (
-    <div>
-      <header className="bg-white shadow">
-        <div className="container py-4 flex items-center justify-between">
-          <Link to="/" className="font-bold text-xl">Sweetify</Link>
-          <nav className="space-x-4">
-            <Link to="/" className="text-gray-600">Home</Link>
-            {!user && <Link to="/login" className="text-blue-600">Login</Link>}
-            {!user && <Link to="/register" className="text-blue-600">Register</Link>}
-            {user && user.role === "admin" && <Link to="/admin" className="text-red-600">Admin</Link>}
-            {user && <button onClick={handleLogout} className="ml-2 text-sm px-3 py-1 bg-gray-100 rounded">Logout</button>}
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      {/* navbar handles top UI and user actions */}
+      <Navbar user={user} onLogout={handleLogout} />
 
-      <main className="container py-8">
+      <main className="container mx-auto px-4 py-8">
         <Routes>
+          {/* Public pages */}
           <Route path="/" element={<Dashboard user={user} />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/register" element={<Register setUser={setUser} />} />
-          <Route path="/admin" element={<AdminPanel user={user} />} />
+
+          {/* Admin-only */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminPanel user={user} />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </main>
     </div>
   );
 }
-
-export default App;
