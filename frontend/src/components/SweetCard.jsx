@@ -1,7 +1,10 @@
 // src/components/SweetCard.jsx
 import React from "react";
+import { useCart } from "../context/CartContext";
 
 export default function SweetCard({ item, onOpenQuantity, isProcessing }) {
+  const { addItem } = useCart();
+
   return (
     <article className="bg-white rounded-lg shadow-card hover:shadow-lg transition p-4 flex flex-col">
       <div className="relative">
@@ -11,7 +14,6 @@ export default function SweetCard({ item, onOpenQuantity, isProcessing }) {
           className="w-full h-44 object-cover rounded-md"
           loading="lazy"
         />
-        {/* category pill */}
         <div className="absolute left-3 top-3 bg-white/80 backdrop-blur px-2 py-1 rounded text-xs font-medium">
           {item.category || "Other"}
         </div>
@@ -29,6 +31,14 @@ export default function SweetCard({ item, onOpenQuantity, isProcessing }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => addItem(item, 1)}
+            className="px-3 py-2 rounded-md border hover:bg-gray-50"
+            title="Add to cart"
+          >
+            + Cart
+          </button>
+
           <button
             onClick={() => onOpenQuantity && onOpenQuantity(item)}
             disabled={isProcessing}

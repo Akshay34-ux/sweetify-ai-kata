@@ -1,34 +1,47 @@
 // src/components/Navbar.jsx
 import React from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
-export default function Navbar({ user, onLogout }) {
+function Navbar({ user, onLogout }) {
+  const { totalItems, setOpen } = useCart();
+
   return (
-    <header className="bg-white border-b border-muted-300">
-      <div className="container flex items-center justify-between py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-300 to-brand-500 flex items-center justify-center text-white font-semibold shadow">
-            S
-          </div>
-          <Link to="/" className="text-2xl font-semibold text-slate-800">Sweetify</Link>
-        </div>
+    <header className="bg-white shadow sticky top-0 z-30">
+      <div className="container mx-auto py-4 px-4 flex items-center justify-between">
+        <Link to="/" className="text-2xl font-bold text-brand-600">Sweetify</Link>
 
-        <nav className="flex items-center gap-4">
-          <Link to="/" className="text-gray-600 hover:text-slate-800">Home</Link>
-          {user ? (
+        <nav className="flex items-center gap-4 text-sm">
+          <Link to="/" className="hover:text-brand-600">Home</Link>
+          {!user && <Link to="/login" className="text-brand-600 hover:underline">Login</Link>}
+          {!user && <Link to="/register" className="text-brand-600 hover:underline">Register</Link>}
+          {user && (
             <>
-              <span className="text-gray-600">Hi, <b>{user.username}</b></span>
-              {user.role === "admin" && <Link to="/admin" className="text-red-600">Admin</Link>}
-              <button onClick={onLogout} className="ml-2 px-3 py-1 rounded bg-slate-100 hover:bg-slate-200">Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
-              <Link to="/register" className="text-blue-600 hover:underline">Register</Link>
+              <span className="text-gray-600">Hi, {user.username}</span>
+              {user.role === "admin" && (
+                <Link to="/admin" className="text-red-600 hover:underline">Admin</Link>
+              )}
+              <button onClick={onLogout} className="text-gray-500 hover:text-red-500">Logout</button>
             </>
           )}
+
+          {/* Cart Button */}
+          <button
+            onClick={() => setOpen(true)}
+            className="relative flex items-center gap-1 px-3 py-1 border rounded hover:bg-gray-100"
+            title="View Cart"
+          >
+            🛒
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1">
+                {totalItems}
+              </span>
+            )}
+          </button>
         </nav>
       </div>
     </header>
   );
 }
+
+export default Navbar;

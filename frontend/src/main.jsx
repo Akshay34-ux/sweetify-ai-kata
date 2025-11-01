@@ -5,8 +5,10 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { CartProvider } from "./context/CartContext";
+import MiniCartDrawer from "./components/MiniCartDrawer";
+import { ToastContainer } from "react-toastify";
 
 const container = document.getElementById("root");
 const root = createRoot(container);
@@ -15,9 +17,11 @@ root.render(
   <React.StrictMode>
     <ErrorBoundary>
       <BrowserRouter>
-        <App />
-        {/* Place ToastContainer here so any component can fire toasts */}
-        <ToastContainer position="top-right" newestOnTop />
+        <CartProvider>
+          <App />
+          <MiniCartDrawer />
+          <ToastContainer position="top-right" autoClose={2500} />
+        </CartProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </React.StrictMode>
