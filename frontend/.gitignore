@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log
+dist/
+.vite/
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# logs
+logs
+*.log
+
+# IDE
+.vscode/
+.idea/
