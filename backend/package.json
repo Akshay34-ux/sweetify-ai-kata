@@ -9,6 +9,9 @@
     "dev": "nodemon src/app.js",
     "test": "jest"
   },
+  "engines": {
+    "node": "18.x"
+  },
   "keywords": [],
   "author": "Akshay",
   "license": "ISC",
