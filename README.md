@@ -66,8 +66,8 @@ npm install
 
 ```bash
 PORT=5001
-MONGO_URI=mongodb+srv://lnakshay385:akshaysweetify@shirtweb.7ewrx.mongodb.net/?appName=sweetify
-JWT_SECRET=supersecretkey
+MONGO_URI=<YOUR-MONGODB-URI>
+JWT_SECRET=<JWT-SECRET-KEY>
 ```
 
 ### 4️⃣ Start the Backend Server
