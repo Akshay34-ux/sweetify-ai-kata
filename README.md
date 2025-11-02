@@ -157,6 +157,18 @@ This project complies with the **AI Kata Ethical Development Guidelines**:
 
 ---
 
+## 🌐 Live Demo
+
+You can explore the deployed version of **Sweetify – AI-Powered Sweet Shop** here:
+
+👉 **[Live Website (Deployed)](https://sweetify-ai-kata.vercel.app/)**  
+
+*(If the site takes a few seconds to load, it’s because the free MongoDB / Render servers may need to wake up.)*
+
+---
+
+### 🧩 Backend API (Deployed)
+API Base URL (for testing with Postman or cURL):
 
 ## 👨‍💻 Developer
 
@@ -198,5 +210,6 @@ AI support was used ethically to **augment learning**, not replace it.
 ---
 
 ✅ **End of README**
+
 
 
