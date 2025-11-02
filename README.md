@@ -51,8 +51,9 @@ This project demonstrates **AI-Augmented Development** practices by leveraging a
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/Akshay34-ux/sweetify-backend.git
-cd sweetify-backend
+git clone https://github.com/Akshay34-ux/sweetify-ai-kata.git
+cd sweetify-ai-kata
+cd backend
 ```
 
 ### 2️⃣ Install Dependencies
@@ -65,8 +66,8 @@ npm install
 
 ```bash
 PORT=5001
-MONGO_URI=<your_mongodb_connection_string>
-JWT_SECRET=<your_jwt_secret>
+MONGO_URI=mongodb+srv://lnakshay385:akshaysweetify@shirtweb.7ewrx.mongodb.net/?appName=sweetify
+JWT_SECRET=supersecretkey
 ```
 
 ### 4️⃣ Start the Backend Server
@@ -78,7 +79,7 @@ npm run dev
 ### 5️⃣ Setup Frontend (if separate)
 
 ```bash
-cd ../sweetify-frontend
+cd ../frontend
 npm install
 npm run dev
 ```
@@ -204,3 +205,4 @@ AI support was used ethically to **augment learning**, not replace it.
 ---
 
 ✅ **End of README**
+
