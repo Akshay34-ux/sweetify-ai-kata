@@ -161,10 +161,14 @@ This project complies with the **AI Kata Ethical Development Guidelines**:
 
 You can explore the deployed version of **Sweetify – AI-Powered Sweet Shop** here:
 
-👉 **[Live Website (Deployed)](https://sweetify-ai-kata.vercel.app/](https://sweetify-frontend.vercel.app/)**  
+👉 **[Live Website (Deployed)](https://sweetify-frontend.vercel.app/)**  
 
-*(If the site takes a few seconds to load, it’s because the free MongoDB / Render servers may need to wake up.)*
+*(Note: The first load might take a few seconds if the backend or database needs to wake up.)*
 
+---
+
+### 🧩 Backend API (Deployed)
+If you want to access the backend API directly (for Postman or testing), use:
 ---
 
 ### 🧩 Backend API (Deployed)
@@ -210,6 +214,7 @@ AI support was used ethically to **augment learning**, not replace it.
 ---
 
 ✅ **End of README**
+
 
 
 
