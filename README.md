@@ -157,13 +157,6 @@ This project complies with the **AI Kata Ethical Development Guidelines**:
 
 ---
 
-## 📸 Screenshots
-
-| Dashboard | Admin Panel | Personalized Recommendations |
-|------------|--------------|-------------------------------|
-| ![Dashboard](assets/dashboard.png) | ![Admin Panel](assets/admin.png) | ![Recommendations](assets/recs.png) |
-
----
 
 ## 👨‍💻 Developer
 
@@ -205,4 +198,5 @@ AI support was used ethically to **augment learning**, not replace it.
 ---
 
 ✅ **End of README**
+
 
