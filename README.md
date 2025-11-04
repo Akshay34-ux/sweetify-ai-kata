@@ -166,6 +166,25 @@ You can explore the deployed version of **Sweetify – AI-Powered Sweet Shop** h
 *(Note: The first load might take a few seconds if the backend or database needs to wake up.)*
 
 ---
+---
+
+### ⚠️ Known Issues & Deployment Notes
+
+- **Initial Connection Timeout (MongoDB Atlas):**  
+  On the very first backend startup, MongoDB Atlas may take a few seconds to establish the initial connection.  
+  This can temporarily cause "Network error — check server or your connection" toasts on the frontend.  
+  ✅ *Resolved:* Implemented an automatic MongoDB reconnection mechanism with exponential backoff and quick `503` responses to prevent long client timeouts.
+
+- **Cold Start Delay (Free Hosting):**  
+  When hosted on free-tier platforms, backend services can “sleep” after inactivity.  
+  The first API call after idle time might briefly fail.  
+  ✅ *Resolved:* Added retry and timeout handling in frontend (`fetchSweets`) and backend auto-retry connection logic.
+
+- **Frontend Toast Flooding:**  
+  Originally, multiple API retries produced repeated “Network error” toasts.  
+  ✅ *Resolved:* Enhanced `src/lib/api.js` with toast deduplication and graceful network failure handling.
+
+---
 
 ### 🧩 Backend API (Deployed)
 If you want to access the backend API directly (for Postman or testing), use:
