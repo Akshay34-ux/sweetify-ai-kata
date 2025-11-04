@@ -166,7 +166,6 @@ You can explore the deployed version of **Sweetify – AI-Powered Sweet Shop** h
 *(Note: The first load might take a few seconds if the backend or database needs to wake up.)*
 
 ---
----
 
 ### ⚠️ Known Issues & Deployment Notes
 
